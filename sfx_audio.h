@@ -1,8 +1,9 @@
-#ifndef ArduboyAudio_h
-#define ArduboyAudio_h
+#ifndef SFXAudio_h
+#define SFXAudio_h
 
 #include <Arduino.h>
 #include <EEPROM.h>
+#include "Arduboy_x.h"
 #include <avr/pgmspace.h>
 #include <avr/power.h>
 
@@ -17,16 +18,15 @@ typedef struct
   unsigned char method;
 } SFX_Data;
 
-class ArduboyAudio
+class SFXAudio
 {
 public:
-	void setup();
+	void begin();
 	void on();
 	void off();
 	void save_on_off();
 	bool enabled();
-
-        void sfx(const SFX_Data * data);
+  void sfx(const SFX_Data * data);
 
 protected:
 	bool audio_enabled;

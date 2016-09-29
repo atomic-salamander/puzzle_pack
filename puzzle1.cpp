@@ -1,6 +1,7 @@
 #include <SPI.h>
 #include <EEPROM.h>
-#include "Ardumod.h"
+#include "Arduboy_x.h"
+#include "sfx_audio.h"
 #include "puzzle.h"
 
 PROGMEM const byte sine_table[64] = {0, 6, 13, 19, 25, 31, 37, 44, 50, 56, 62, 68, 74, 80, 86, 92, 98, 103, 109, 115, 120, 126, 131, 136, 142, 147, 152, 157, 162, 167, 171, 176, 180, 185, 189, 193, 197, 201, 205, 208, 212, 215, 219, 222, 225, 228, 231, 233, 236, 238, 240, 242, 244, 246, 247, 249, 250, 251, 252, 253, 254, 254, 255, 255};
@@ -11,6 +12,7 @@ const SFX_Data sfx_cant_shift = {20, 24 - 32, 0, 7, 0, 12, 1};
 const SFX_Data sfx_match = {0, 39 - 32, 27 - 32, 7, 0, 23, 1};
 
 extern Arduboy arduboy;
+extern SFXAudio audio;
 
 extern unsigned int game_tick;
 extern unsigned int score;
@@ -59,7 +61,7 @@ static void game_create()
 
 static void game_delete()
 {
- delete game_data; 
+ delete game_data;
 }
 
 static int fast_sin(byte a, byte size)
@@ -264,7 +266,7 @@ static void clear_match()
    if(game_data->combo == 4) send_message("QUAD COMBO");
    if(game_data->combo >  5) send_message("SUPER COMBO");
    game_data->combo++;
-   arduboy.audio.sfx(&sfx_match);
+   audio.sfx(&sfx_match);
    check_match();
    return;
   }
@@ -275,7 +277,7 @@ static void shift_left()
 {
  if(game_data->playfield[game_data->selected * 13].type != 0 || game_data->playfield[game_data->selected * 13 + 7].type == 0)
  {
-   arduboy.audio.sfx(&sfx_cant_shift);
+   audio.sfx(&sfx_cant_shift);
    return;
  }
  byte a = 0;
@@ -285,14 +287,14 @@ static void shift_left()
  }
  game_data->playfield[game_data->selected * 13 + a].type = 0;
  check_match();
- arduboy.audio.sfx(&sfx_horizontal_shift);
+ audio.sfx(&sfx_horizontal_shift);
 }
 
 static void shift_right()
 {
  if(game_data->playfield[game_data->selected * 13 + 12].type != 0 || game_data->playfield[game_data->selected * 13 + 5].type == 0)
  {
-   arduboy.audio.sfx(&sfx_cant_shift);
+   audio.sfx(&sfx_cant_shift);
    return;
  }
  byte a = 12;
@@ -302,7 +304,7 @@ static void shift_right()
  }
  game_data->playfield[game_data->selected * 13 + a].type = 0;
  check_match();
- arduboy.audio.sfx(&sfx_horizontal_shift);
+ audio.sfx(&sfx_horizontal_shift);
 }
 
 static void shift_up()
@@ -316,7 +318,7 @@ static void shift_up()
  }
  game_data->playfield[6 + 13 * a] = temp_shape;
  check_match();
- arduboy.audio.sfx(&sfx_vertical_shift);
+ audio.sfx(&sfx_vertical_shift);
 }
 
 static void shift_down()
@@ -330,7 +332,7 @@ static void shift_down()
  }
  game_data->playfield[6 + 13 * a] = temp_shape;
  check_match();
- arduboy.audio.sfx(&sfx_vertical_shift);
+ audio.sfx(&sfx_vertical_shift);
 }
 
 static void game_update()
@@ -362,7 +364,7 @@ static void game_update()
    {
     shift_down();
    }
-   if(key_b == 1) arduboy.audio.sfx(&sfx_vertical_shift);
+   if(key_b == 1) audio.sfx(&sfx_vertical_shift);
   }
   game_data->delay_timer++;
   if(game_data->delay_timer > game_data->delay_amount)
@@ -375,7 +377,7 @@ static void game_update()
  {
   if(game_data->b_held)
   {
-    arduboy.audio.sfx(&sfx_horizontal_shift);
+    audio.sfx(&sfx_horizontal_shift);
     game_data->b_held = 0;
   }
   if(key_up == 1)
@@ -393,7 +395,7 @@ static void game_update()
 
 static void game_draw()
 {
-  arduboy.clearDisplay();
+  arduboy.clear();
   if(game_data->match_animation_timer == 0 && key_b)
   {
     arduboy.drawFastVLine(9 * 7 - 8, 8, 63, 1);

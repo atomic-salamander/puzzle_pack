@@ -1,6 +1,7 @@
 #include <SPI.h>
 #include <EEPROM.h>
-#include "Ardumod.h"
+#include "Arduboy_x.h"
+#include "sfx_audio.h"
 #include "puzzle.h"
 
 const SFX_Data sfx_grab = {4, 38 - 32, 0, 7, 0, 16, 0};
@@ -8,6 +9,7 @@ const SFX_Data sfx_drop = {24, 31 - 32, 0, 7, 0, 32, 0};
 const SFX_Data sfx_cant_drop = {20, 24 - 32, 0, 7, 0, 12, 1};
 const SFX_Data sfx_match = {64, 0, 30 - 32, 7, 0, 32, 0};
 extern Arduboy arduboy;
+extern SFXAudio audio;
 
 extern unsigned int game_tick;
 extern unsigned int score;
@@ -181,9 +183,9 @@ static void game_update()
  if(game_data->match_animation_timer)
  {
   game_data->match_animation_timer--;
-  if(game_data->match_animation_timer == 0) 
+  if(game_data->match_animation_timer == 0)
   {
-     arduboy.audio.sfx(&sfx_match);
+     audio.sfx(&sfx_match);
      clear_match();
   }
  }
@@ -205,14 +207,14 @@ static void game_update()
        game_data->picked_block_y[game_data->picked_block_count] = block.y;
        game_data->picked_block_count = 1;
        block.color = 0;
-       arduboy.audio.sfx(&sfx_grab);
+       audio.sfx(&sfx_grab);
       }
       else if(block.color == game_data->picked_block_color)
       {
        game_data->picked_block_y[game_data->picked_block_count] = block.y;
        game_data->picked_block_count++;
        block.color = 0;
-       arduboy.audio.sfx(&sfx_grab);
+       audio.sfx(&sfx_grab);
       }
       break;
      }
@@ -247,14 +249,14 @@ static void game_update()
       game_data->picked_block_count--;
       game_data->playfield[game_data->selected + a * PLAYFIELD_WIDTH].y = game_data->picked_block_y[game_data->picked_block_count];
      }
-     arduboy.audio.sfx(&sfx_drop);
+     audio.sfx(&sfx_drop);
      check_match(game_data->selected, a - 1);
      if(game_data->match_count > 3) game_data->match_animation_timer = 9;
      else clear_checked();
     }
     else
     {
-      arduboy.audio.sfx(&sfx_cant_drop);
+      audio.sfx(&sfx_cant_drop);
     }
    }
   }
@@ -263,7 +265,7 @@ static void game_update()
 
 static void game_draw()
 {
- arduboy.clearDisplay();
+ arduboy.clear();
  for(byte a = 0; a < PLAYFIELD_WIDTH; a++)
  {
   for(byte b = 0; b < PLAYFIELD_HEIGHT; b++)

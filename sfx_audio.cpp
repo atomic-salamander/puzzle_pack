@@ -1,10 +1,7 @@
-#include "Ardumod.h"
-#include "audio.h"
+#include "sfx_audio.h"
 
-volatile byte *_tunes_timer1_pin_port;
-volatile byte _tunes_timer1_pin_mask;
-volatile byte *_tunes_timer3_pin_port;
-volatile byte _tunes_timer3_pin_mask;
+volatile byte *_timer1_pin_port;
+volatile byte _timer1_pin_mask;
 
 union
 {
@@ -19,44 +16,40 @@ volatile unsigned char method;
 
 /* AUDIO */
 
-void ArduboyAudio::on() {
+void SFXAudio::on() {
   duration1.sixteen_bits = 0;
-  /*
-  power_timer1_enable();
-  power_timer3_enable();*/
   audio_enabled = true;
 }
 
-bool ArduboyAudio::enabled() {
+bool SFXAudio::enabled() {
   return audio_enabled;
 }
 
-void ArduboyAudio::off() {
-  audio_enabled = false;/*
-  power_timer1_disable();
-  power_timer3_disable();*/
+void SFXAudio::off() {
+  audio_enabled = false;
 }
 
-void ArduboyAudio::save_on_off() {
+void SFXAudio::save_on_off() {
   EEPROM.write(EEPROM_AUDIO_ON_OFF, audio_enabled);
 }
 
-void ArduboyAudio::setup() {
+void SFXAudio::begin() {
   // idk what any of this does
+  //power_timer1_enable(); // doesn't seem to make any difference
   pinMode(PIN_SPEAKER_1, OUTPUT);
+  pinMode(PIN_SPEAKER_2, OUTPUT); // need to enable both speaker pins, even if you only use 1 :)
+  _timer1_pin_port = portOutputRegister(digitalPinToPort(PIN_SPEAKER_1));
+  _timer1_pin_mask = digitalPinToBitMask(PIN_SPEAKER_1);
   TCCR1A = 0;
-  TCCR1B = 0;
-  bitWrite(TCCR1B, WGM12, 1);
-  bitWrite(TCCR1B, CS10, 1);
-  _tunes_timer1_pin_port = portOutputRegister(digitalPinToPort(PIN_SPEAKER_1));
-  _tunes_timer1_pin_mask = digitalPinToBitMask(PIN_SPEAKER_1);
+  TCCR1B = 1 << WGM12;
+  TCCR1B |= 1 << CS10;
   TCCR1B = (TCCR1B & 0b11111000) | 0b001;
-  OCR1A = F_CPU / 4096  - 1;
-  bitWrite(TIMSK1, OCIE1A, 1);
+  OCR1A = F_CPU / 4096 - 1;
+  TIMSK1 = 1 << OCIE1A;
   if (EEPROM.read(EEPROM_AUDIO_ON_OFF)) on();
 }
 
-void ArduboyAudio::sfx(const SFX_Data * data)
+void SFXAudio::sfx(const SFX_Data * data)
 {
   if(audio_enabled == 0) return;
   duration1.sixteen_bits = 0; // this should make this interrupt safe
@@ -100,13 +93,13 @@ ISR(TIMER1_COMPA_vect) {  // TIMER 1
         if(phase1.eight_bits[1] & B10000000)
         {
           phase1.eight_bits[1] &= B01111111;
-          *_tunes_timer1_pin_port ^= _tunes_timer1_pin_mask;
+          *_timer1_pin_port ^= _timer1_pin_mask;
         }
         phase2.sixteen_bits += pitch2;
         if(phase2.eight_bits[1] & B10000000)
         {
           phase2.eight_bits[1] &= B01111111;
-          *_tunes_timer1_pin_port ^= _tunes_timer1_pin_mask;
+          *_timer1_pin_port ^= _timer1_pin_mask;
         }
         break;
       case 1:
@@ -114,13 +107,13 @@ ISR(TIMER1_COMPA_vect) {  // TIMER 1
         if(phase1.sixteen_bits > pitch1 >> 5)
         {
           phase1.sixteen_bits = 0;
-          *_tunes_timer1_pin_port ^= _tunes_timer1_pin_mask;
+          *_timer1_pin_port ^= _timer1_pin_mask;
         }
         phase2.sixteen_bits++;
         if(phase2.sixteen_bits > pitch2 >> 5)
         {
           phase2.sixteen_bits = 0;
-          *_tunes_timer1_pin_port ^= _tunes_timer1_pin_mask;
+          *_timer1_pin_port ^= _timer1_pin_mask;
         }
         break;
     }
@@ -128,11 +121,7 @@ ISR(TIMER1_COMPA_vect) {  // TIMER 1
   }
   else
   {
-    *_tunes_timer1_pin_port &= ~(_tunes_timer1_pin_mask); // set pin low
+    *_timer1_pin_port &= ~(_timer1_pin_mask); // set pin low
   }
-}
-
-ISR(TIMER3_COMPA_vect) {  // TIMER 3
-  // nothing
 }
 
