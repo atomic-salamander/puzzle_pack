@@ -1,6 +1,6 @@
 #include <SPI.h>
 #include <EEPROM.h>
-#include "Arduboy_x.h"
+#include <Arduboy2.h>
 #include "sfx_audio.h"
 #include "puzzle.h"
 
@@ -30,7 +30,7 @@ static PROGMEM const byte sprites[] = {
 const SFX_Data sfx_swap_blocks = {16, 44 - 32, 16 - 32, 7, 0, 16, 0};
 //const SFX_Data sfx_pop_blocks = {16, 44 - 32, 16 - 32, 7, 0, 25, 0};
 
-extern Arduboy arduboy;
+extern Arduboy2 arduboy;
 extern SFXAudio audio;
 
 extern unsigned int game_tick;

@@ -18,26 +18,24 @@ volatile unsigned char method;
 
 void SFXAudio::on() {
   duration1.sixteen_bits = 0;
-  audio_enabled = true;
+  arduboy.audio.on();
 }
 
 bool SFXAudio::enabled() {
-  return audio_enabled;
+  return arduboy.audio.enabled();
 }
 
 void SFXAudio::off() {
-  audio_enabled = false;
+  arduboy.audio.off();
 }
 
 void SFXAudio::save_on_off() {
-  EEPROM.write(EEPROM_AUDIO_ON_OFF, audio_enabled);
+  arduboy.audio.saveOnOff();
 }
 
 void SFXAudio::begin() {
   // idk what any of this does
   //power_timer1_enable(); // doesn't seem to make any difference
-  pinMode(PIN_SPEAKER_1, OUTPUT);
-  pinMode(PIN_SPEAKER_2, OUTPUT); // need to enable both speaker pins, even if you only use 1 :)
   _timer1_pin_port = portOutputRegister(digitalPinToPort(PIN_SPEAKER_1));
   _timer1_pin_mask = digitalPinToBitMask(PIN_SPEAKER_1);
   TCCR1A = 0;
@@ -46,12 +44,12 @@ void SFXAudio::begin() {
   TCCR1B = (TCCR1B & 0b11111000) | 0b001;
   OCR1A = F_CPU / 4096 - 1;
   TIMSK1 = 1 << OCIE1A;
-  if (EEPROM.read(EEPROM_AUDIO_ON_OFF)) on();
+  if (enabled()) on();
 }
 
 void SFXAudio::sfx(const SFX_Data * data)
 {
-  if(audio_enabled == 0) return;
+  if(!enabled()) return;
   duration1.sixteen_bits = 0; // this should make this interrupt safe
   phase1.sixteen_bits = 0;
   phase2.eight_bits[0] = 0;

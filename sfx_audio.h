@@ -3,9 +3,11 @@
 
 #include <Arduino.h>
 #include <EEPROM.h>
-#include "Arduboy_x.h"
+#include <Arduboy2.h>
 #include <avr/pgmspace.h>
 #include <avr/power.h>
+
+extern Arduboy2 arduboy;
 
 typedef struct
 {
@@ -21,15 +23,12 @@ typedef struct
 class SFXAudio
 {
 public:
-	void begin();
-	void on();
-	void off();
-	void save_on_off();
-	bool enabled();
+  void begin();
+  void on();
+  void off();
+  void save_on_off();
+  bool enabled();
   void sfx(const SFX_Data * data);
-
-protected:
-	bool audio_enabled;
 };
 
 #endif

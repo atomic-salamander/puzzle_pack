@@ -4,7 +4,7 @@ Puzzle Pack by Atomic
 
 */
 
-#include "Arduboy_x.h"
+#include <Arduboy2.h>
 #include "sfx_audio.h"
 #include "puzzle.h"
 
@@ -25,7 +25,7 @@ static PROGMEM const byte title_sprites[64 * 2 * 3] = {
 const SFX_Data sfx_change_game = {30, 36 - 32, 29 - 32, 7, 0, 16, 1};
 
 SFXAudio audio;
-Arduboy arduboy;
+Arduboy2 arduboy;
 
 void set_state_menu();
 void set_state_play();
@@ -47,14 +47,6 @@ byte key_a = 0;
 
 void intro()
 {
-  for(int i = -8; i < 28; i = i + 2)
-  {
-    arduboy.clear();
-    arduboy.setCursor(46, i);
-    arduboy.print("ARDUBOY");
-    arduboy.display();
-    delay(33);
-  }
   SFX_Data sfx_intro = {85, 0, 0, 4, 4, 32, 0};
   audio.sfx(&sfx_intro);
   delay(160);
@@ -171,7 +163,6 @@ void allow_mute()
 {
   if(key_up == 1 && audio.enabled() == 0)
   {
-  audio.begin();
     audio.on();
     SFX_Data sfx_unmute = {32, 34 - 32, 0, 7, 0, 12, 0};
     audio.sfx(&sfx_unmute);
@@ -195,7 +186,7 @@ extern void create_game3(Game & game);
 static char game_name[] = "Puzzle Pack";
 
 void setup() {
-  arduboy.beginNoLogo();
+  arduboy.begin();
   arduboy.setFrameRate(30);
   arduboy.display();
   audio.begin();
@@ -208,7 +199,7 @@ void setup() {
   {
     if(EEPROM.read(EEPROM_STORAGE_SPACE_START + a) != game_name[a])
     {
-      EEPROM.write(EEPROM_STORAGE_SPACE_START + a, game_name[a]);
+      EEPROM.update(EEPROM_STORAGE_SPACE_START + a, game_name[a]);
       save_found = 0;
     }
   }
@@ -231,7 +222,7 @@ void setup() {
   {
     for(byte a = 0; a < GAME_COUNT * GAME_SAVE_SIZE; a++)
     {
-      EEPROM.write(EEPROM_SAVE_START + a, 0);
+      EEPROM.update(EEPROM_SAVE_START + a, 0);
     }
   }
   fade_to(set_state_menu);
@@ -418,14 +409,14 @@ void set_state_game_over()
 {
   if(score > games[selected_game].high_score)
   {
-    EEPROM.write(EEPROM_SAVE_START + selected_game * GAME_SAVE_SIZE, score >> 8);
-    EEPROM.write(EEPROM_SAVE_START + selected_game * GAME_SAVE_SIZE + 1, score);
+    EEPROM.update(EEPROM_SAVE_START + selected_game * GAME_SAVE_SIZE, score >> 8);
+    EEPROM.update(EEPROM_SAVE_START + selected_game * GAME_SAVE_SIZE + 1, score);
     games[selected_game].high_score = score;
   }
   games[selected_game].time += game_tick / 30;
   for(byte b = 0; b < 4; b++)
   {
-    EEPROM.write(EEPROM_SAVE_START + selected_game * GAME_SAVE_SIZE + 2 + b, games[selected_game].time >> (3 - b) * 8);
+    EEPROM.update(EEPROM_SAVE_START + selected_game * GAME_SAVE_SIZE + 2 + b, games[selected_game].time >> (3 - b) * 8);
   }
   tick = 0;
   game_state = state_game_over;

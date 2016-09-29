@@ -1,6 +1,6 @@
 #include <SPI.h>
 #include <EEPROM.h>
-#include "Arduboy_x.h"
+#include <Arduboy2.h>
 #include "sfx_audio.h"
 #include "puzzle.h"
 
@@ -11,7 +11,7 @@ const SFX_Data sfx_horizontal_shift = {32, 28 - 32, 0, 7, 0, 4, 0};
 const SFX_Data sfx_cant_shift = {20, 24 - 32, 0, 7, 0, 12, 1};
 const SFX_Data sfx_match = {0, 39 - 32, 27 - 32, 7, 0, 23, 1};
 
-extern Arduboy arduboy;
+extern Arduboy2 arduboy;
 extern SFXAudio audio;
 
 extern unsigned int game_tick;
