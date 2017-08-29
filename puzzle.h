@@ -1,3 +1,6 @@
+#ifndef PUZZLE_H
+#define PUZZLE_H
+
 typedef struct
 {
   void (*_create)();
@@ -14,3 +17,4 @@ void add_string_to_string(char * string1, char * string2);
 
 void set_state_game_over();
 
+#endif
